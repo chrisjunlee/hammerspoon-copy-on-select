@@ -52,12 +52,11 @@ mouseDown:start()
 mouseDragged:start()
 mouseUp:start()
 
--- macOS disables an eventtap if a callback ever runs long; restart any that go dead.
+-- macOS can silently disable an eventtap under load in ways isEnabled() does not
+-- always reflect, so bounce the taps unconditionally every 5 minutes.
 local taps = { mouseDown, mouseDragged, mouseUp }
-local watchdog = hs.timer.doEvery(5, function()
-  for _, t in ipairs(taps) do
-    if not t:isEnabled() then t:start() end
-  end
+local watchdog = hs.timer.doEvery(300, function()
+  for _, t in ipairs(taps) do t:stop(); t:start() end
 end)
 
 hs.alert.show("Copy-on-select armed")
